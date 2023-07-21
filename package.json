@@ -1,0 +1,15 @@
+{
+    "name": "@popovmp/read-json",
+    "version": "1.0.0",
+    "description": "Reads a JSON file. Supports UTF8, UTF16, BOM",
+    "main": "index.js",
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:PopovMP/read-json.git"
+    },
+    "scripts": {
+      "test": "node --test"
+    }
+  }
+  
