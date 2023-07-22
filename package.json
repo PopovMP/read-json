@@ -1,6 +1,6 @@
 {
     "name": "@popovmp/read-json",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Reads a JSON file. Supports UTF8, UTF16, BOM",
     "main": "index.js",
     "license": "MIT",
