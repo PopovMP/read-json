@@ -1,17 +1,15 @@
 "use strict";
 
-const {readFileSync}        = require("fs");
-const {equal}               = require("assert");
+const {readFileSync}        = require("node:fs");
+const {equal}               = require("node:assert");
 const {describe, it, after} = require("node:test");
 
 const { readJson } = require("../index");
 
-const encodings = ["ansi", "ut8", "utf8-bom", "utf16-be-bom", "utf16-le-bom"];
-
 describe("Read JSON file", () => {
     const output = [];
 
-    for (const encoding of encodings) {
+    for (const encoding of ["ansi", "utf8", "utf8-bom", "utf16-le-bom"]) {
         it(encoding, () => {
             const filename = `./test/foo.${encoding}.json`;
 
@@ -23,9 +21,25 @@ describe("Read JSON file", () => {
             // Log details
             output.push({
                 encoding,
-                data: readFileSync(filename)
-                    .map((byte) => byte === 0 ? 32 : byte > 127 || byte < 32 ? 63 : byte)
-                    .toString(),
+                data: getData(filename),
+                text: JSON.stringify(json),
+            });
+        })
+    }
+
+    for (const encoding of ["utf8", "utf16-le-bom"]) {
+        it(encoding, () => {
+            const filename = `./test/hello.${encoding}.json`;
+
+            /** @type {{hello: number}} */
+            const json = readJson(filename);
+
+            equal(json.hello, "Свят");
+
+            // Log details
+            output.push({
+                encoding,
+                data: getData(filename),
                 text: JSON.stringify(json),
             });
         })
@@ -41,4 +55,10 @@ describe("Read JSON file", () => {
             console.log(`Encoding: ${enc}, data: ${data}, json: ${rec.text}`);
         }
     })
+
+    function getData(filename) {
+        return readFileSync(filename)
+            .map((byte) => byte === 0 ? 32 : byte > 126 || byte < 32 ? 63 : byte)
+            .toString()
+    }
 })
