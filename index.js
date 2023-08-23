@@ -8,46 +8,29 @@ const {readFileSync} = require("node:fs");
  *
  * @param {string} filePath
  *
- * @return {*}
+ * @returns {*}
  */
 function readJson(filePath) {
-    return JSON.parse(bufferToString(removeBom(readFileSync(filePath))));
-}
+    /** @type {Buffer} */
+    const buf = readFileSync(filePath);
+    const b0  = buf.at(0);
+    const b1  = buf.at(1);
+    const b2  = buf.at(2);
 
-/**
- * Removes the BOM record from a JSON file.
- *
- * @param {Buffer} buffer
- *
- * @return {Buffer}
- */
-function removeBom(buffer) {
-    const asciiStart =  32; // The "space" (ASCII  32) - the first printable character
-    const asciiEnd   = 126; // The "~"     (ASCII 126) - the last printable character
-
-    let index = 0;
-    while (index < 3 && (buffer[index] < asciiStart ||
-                         buffer[index] > asciiEnd)) {
-        index += 1;
+    // UTF-8
+    if (b0 === 239 && b1 === 187 && b2 === 191) {
+        return JSON.parse(buf.subarray(3).toString("utf8"));
     }
 
-    // The index points to the first ASCII character of the buffer
-    return index === 0 ? buffer : buffer.subarray(index);
-}
+    // UTF-16-LE
+    if (b0 === 255 && b1 === 254) {
+        return JSON.parse(buf.subarray(2).toString("utf16le"));
+    }
 
-/**
- * Converts a buffer to string.
- *
- * @param {Buffer} buffer
- *
- * @return {string}
- */
-function bufferToString(buffer) {
-    const encoding = buffer[1] > 0 ? "utf8" : "utf16le";
-
-    return buffer.toString(encoding);
+    // ASCII, UTF-8 no BOM, UTF-16-LE no BOM
+    return JSON.parse(buf.toString(b1 > 0 ? "utf8" : "utf16le"));
 }
 
 module.exports = {
     readJson,
-}
+};
